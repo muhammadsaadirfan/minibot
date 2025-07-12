@@ -1,0 +1,57 @@
+local_costmap:
+    global_frame: map
+    robot_base_frame: base_link
+    update_frequency: 10.0
+    publish_frequency: 5.0
+
+
+    static_map: true
+    rolling_window: true
+    width: 3.0
+    height: 3.0
+    resolution: 0.05
+
+
+
+    obstacle_range: 2.5
+    raytrace_range: 2.5
+
+    plugins: 
+        - {name: static_layer,            type: "costmap_2d::StaticLayer"}
+        - {name: inflation_layer,         type: "costmap_2d::InflationLayer"}
+        - {name: obstacle_layer,          type: "costmap_2d::ObstacleLayer"}
+
+        - {name: proxemic_layer,       type: "social_navigation_layers::ProxemicLayer"}
+        - {name: passing_layer,        type: "social_navigation_layers::PassingLayer"}
+
+    static_layer:
+        enabled:              true
+        map_topic:            "/map"
+
+
+    inflation_layer:
+        enabled:              true
+        cost_scaling_factor:  5  
+        inflation_radius:     0.3
+
+    obstacle_layer:
+        observation_sources: laser_scan_sensor
+        footprint_clearing_enabled: true
+        laser_scan_sensor: {data_type: LaserScan, sensor_frame: lidar_link, clearing: true, marking: true, topic: /scan}
+          
+
+    proxemic_layer:
+        enabled: true
+        cutoff: 10.0
+        amplitude: 77.0
+        covariance: 0.25
+        factor: 5.0
+        keep_time: 0.75
+
+    passing_layer:
+        enabled: true
+        cutoff: 10.0
+        amplitude: 77.0
+        covariance: 0.25
+        factor: 5.0
+        keep_time: 0.75
