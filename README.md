@@ -116,8 +116,11 @@ By the end of this guide, you'll have:
 ✅ **Integrated LIDAR** for autonomous navigation  
 ✅ **Configured SLAM** for real-time mapping  
 ✅ **Tuned navigation parameters** for optimal performance  
-✅ **Debugged common robotics issues** you'll encounter in real projects 
+✅ **Debugged common robotics issues** you'll encounter in real projects
 
+✅ **Simulated the robot** in Gazebo before hardware testing
+
+✅ **Deployed on real hardware** with confidence
 
 ### Project Goals
 
@@ -1906,3 +1909,24 @@ rostopic echo /move_base/status
 ---
 
 <div class="section-border">
+
+---
+
+## 🙏 Thank You!
+
+Thank you for exploring this project. I hope this educational mobile robot empowers you to dive deeper into robotics, hands-on learning, and real-world system integration. Your interest and dedication to building robots is what drives innovation in this field.
+
+If you have **any suggestions, feedback, or improvements**, feel free to open an issue or reach out to me directly. Collaboration and learning go hand in hand, and I'd love to hear from you!
+
+---
+
+## 👤 About the Author
+
+**Muhammad Saad**  
+🎓 Mechatronics and Control Engineering Student  
+🏫 University of Engineering and Technology, Lahore  
+📍 Lahore, Pakistan  
+📧 Email: [msaadmceu@gmail.com](mailto:msaadmceu@gmail.com)
+
+
+
