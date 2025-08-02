@@ -720,194 +720,351 @@ void encoderISR2() {
 Create a launch file for rosserial communication:
 
 ```xml
-<!-- minibot_serial.launch -->
+<!-- controller.launch -->
 <launch>
-    <!-- Serial communication with Arduino -->
-    <node name="rosserial_python" pkg="rosserial_python" type="serial_node.py">
-        <param name="port" value="/dev/ttyACM0" />
-        <param name="baud" value="57600" />
-    </node>
-    
-    <!-- Robot state publisher -->
-    <param name="robot_description" textfile="$(find minibot_description)/urdf/minibot.urdf" />
-    <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" />
-    
-    <!-- Transform broadcaster for base_link to odom -->
-    <node name="base_link_broadcaster" pkg="tf" type="static_transform_publisher" 
-          args="0 0 0 0 0 0 odom base_link 100" />
+  <!-- Load robot description -->
+  <param name="robot_description" command="$(find xacro)/xacro --inorder '$(find mobile_robot)/urdf/my_robo_hardware.urdf'" />
+
+  <!-- Publish joint states -->
+  <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" />
+
+  <!-- Load controller params -->
+  <rosparam file="$(find mobile_robot)/config/controllers.yaml" command="load" />
+
+  <!-- Hardware interface node -->
+  <node name="hardware_interface" pkg="mobile_robot" type="diff_drive_hardware_interface" output="screen" />
+
+  <!-- Spawner for joint state controller -->
+  <node name="joint_state_spawner" pkg="controller_manager" type="spawner"
+        args="joint_state_controller" output="screen" />
+
+  <!-- Spawner for diff drive controller -->
+  <node name="diff_drive_spawner" pkg="controller_manager" type="spawner"
+        args="diff_drive_controller" output="screen">
+ 
+  </node>
 </launch>
 ```
 
 ### Creating Robot Description (URDF)
 
 ```xml
-<!-- minibot.urdf -->
-<?xml version="1.0"?>
-<robot name="minibot">
-    <!-- Base Link -->
-    <link name="base_link">
-        <visual>
-            <geometry>
-                <box size="0.3 0.2 0.1"/>
-            </geometry>
-            <material name="blue">
-                <color rgba="0 0 1 1"/>
-            </material>
-        </visual>
-        <collision>
-            <geometry>
-                <box size="0.3 0.2 0.1"/>
-            </geometry>
-        </collision>
-    </link>
-    
-    <!-- Left Wheel -->
-    <link name="left_wheel">
-        <visual>
-            <geometry>
-                <cylinder radius="0.065" length="0.03"/>
-            </geometry>
-            <material name="black">
-                <color rgba="0 0 0 1"/>
-            </material>
-        </visual>
-    </link>
-    
-    <!-- Right Wheel -->
-    <link name="right_wheel">
-        <visual>
-            <geometry>
-                <cylinder radius="0.065" length="0.03"/>
-            </geometry>
-            <material name="black">
-                <color rgba="0 0 0 1"/>
-            </material>
-        </visual>
-    </link>
-    
-    <!-- LIDAR Link -->
-    <link name="laser">
-        <visual>
-            <geometry>
-                <cylinder radius="0.04" length="0.02"/>
-            </geometry>
-            <material name="red">
-                <color rgba="1 0 0 1"/>
-            </material>
-        </visual>
-    </link>
-    
-    <!-- Joints -->
-    <joint name="left_wheel_joint" type="continuous">
-        <parent link="base_link"/>
-        <child link="left_wheel"/>
-        <origin xyz="0 0.1 -0.05" rpy="1.5708 0 0"/>
-        <axis xyz="0 0 1"/>
+<!-- my_robo_hardware.urdf -->
+<?xml version="1.0"?>	
+<robot name="robot">
+
+  <material name="Orange">
+    <color rgba="0.5 0.2 0.0 1" />
+  </material>
+  <material name="Yellow">
+    <color rgba="0.5 0.5 0.0 1" />
+  </material>
+  <material name="Black">
+    <color rgba="0.5 0.0 0.0 1" />
+  </material>
+  <material name="Blue">
+    <color rgba="0.0 0.0 0.4 1" />
+  </material>
+  <material name="Green">
+    <color rgba="0.0 0.4 0.0 1" />
+  </material>
+  <material name="White">
+    <color rgba="1 1 1 1" />
+  </material>
+
+  <link name="base_footprint" />
+
+  <link name="base_link">
+    <inertial>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <mass value="70.0" />
+      <inertia ixx="0.079945" ixy="0.00012078" ixz="0.00015606" iyy="0.068406" iyz="-0.0049053" izz="0.12343" />
+    </inertial>
+  <visual>
+    <origin xyz="0 0 -0.015" rpy="0 0 -1.57" />
+    <geometry>
+      <mesh filename="package://mobile_robot/urdf/meshes/Base_Plate.stl" scale="0.001 0.001 0.001"/>
+    </geometry>
+    <material name="Blue" />
+  </visual>
+  <collision>
+    <origin xyz="0 0 -0.015" rpy="0 0 -1.57" />
+    <geometry>
+      <mesh filename="package://mobile_robot/urdf/meshes/Base_Plate.stl" scale="0.001 0.001 0.001"/>
+    </geometry>
+  </collision>
+  </link>
+
+  <joint name="base_joint" type="fixed">
+    <origin xyz="0 0 0.05335" rpy="0 0 0" />
+    <parent link="base_footprint" />
+    <child link="base_link" />
+    <axis xyz="0 0 0" />
+  </joint>
+
+  <link name="robot_body_link">
+    <inertial>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <mass value="70.0" />
+      <inertia ixx="0.079945" ixy="0.00012078" ixz="0.00015606" iyy="0.068406" iyz="-0.0049053" izz="0.12343" />
+    </inertial>
+  <visual>
+    <origin xyz="0.0 0 -0.19125" rpy="0 0 -1.57" />
+    <geometry>
+      <mesh filename="package://mobile_robot/urdf/meshes/Robot_Cover_Full.stl" scale="0.001 0.001 0.001"/>
+    </geometry>
+    <material name="Yellow" />
+  </visual>
+  <collision>
+    <origin xyz="0.0 0 -0.19125" rpy="0 0 -1.57" />
+    <geometry>
+      <mesh filename="package://mobile_robot/urdf/meshes/Robot_Cover_Full.stl" scale="0.001 0.001 0.001"/>
+    </geometry>
+  </collision>
+  </link>
+
+  <joint name="robot_body_joint" type="fixed">
+    <origin xyz="0 0 0.175" rpy="0 0 0" />
+    <parent link="base_link" />
+    <child link="robot_body_link" />
+    <axis xyz="0 0 0" />
+  </joint>
+
+  <link name="right_wheel_link">
+    <inertial>
+      <origin xyz="0.0 0.0 0.0" rpy="0 0 0" />
+      <mass value="0.50917" />
+      <inertia ixx="0.0012185" ixy="1.8059E-20" ixz="3.0427E-20" iyy="0.0012185" iyz="-4.0491E-20" izz="0.0022928" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <cylinder length="0.03" radius="0.04" />
+      </geometry>
+      <material name="Black" />
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <cylinder length="0.03" radius="0.04" />
+      </geometry>
+    </collision>
+  </link>
+
+  <joint name="right_wheel_joint" type="continuous">
+    <origin xyz="0.0 -0.12 0.01" rpy="1.571 0 0" />
+    <parent link="base_link" />
+    <child link="right_wheel_link" />
+    <axis xyz="0 0 -1" />
+  </joint>
+
+  <link name="left_wheel_link">
+    <inertial>
+      <origin xyz="0.0 0.0 0.0" rpy="0 0 0" />
+      <mass value="0.50917" />
+      <inertia ixx="0.0012185" ixy="1.8059E-20" ixz="3.0427E-20" iyy="0.0012185" iyz="-4.0491E-20" izz="0.0022928" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <cylinder length="0.03" radius="0.04" />
+      </geometry>
+      <material name="Black" />
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <cylinder length="0.03" radius="0.04" />
+      </geometry>
+    </collision>
+  </link>
+
+  <joint name="left_wheel_joint" type="continuous">
+    <origin xyz="0.0 0.12 0.01" rpy="-1.571 0 0" />
+    <parent link="base_link" />
+    <child link="left_wheel_link" />
+    <axis xyz="0 0 1" />
+  </joint>
+
+  <link name="lidar_link">
+    <inertial>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <mass value="0.0093378" />
+      <inertia ixx="0" ixy="0" ixz="0" iyy="0" iyz="0" izz="0" /> 
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <cylinder length="0.046" radius="0.035" />
+      </geometry>
+      <material name="Green" />
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <cylinder length="0.046" radius="0.035" />
+      </geometry>
+    </collision>
+  </link>
+
+  <joint name="laser_joint" type="fixed">
+    <origin xyz="0.0075 0.0 0.35" rpy="0 0 3.14" />
+    <parent link="base_link" />
+    <child link="lidar_link" />
+    <axis xyz="0 0 0" />
+  </joint>
+
+  <!-- Transmission (for ros_control) -->
+  <transmission name="left_wheel_trans">
+    <type>transmission_interface/SimpleTransmission</type>
+    <joint name="left_wheel_joint">
+      <hardwareInterface>hardware_interface/VelocityJointInterface</hardwareInterface>
     </joint>
-    
-    <joint name="right_wheel_joint" type="continuous">
-        <parent link="base_link"/>
-        <child link="right_wheel"/>
-        <origin xyz="0 -0.1 -0.05" rpy="1.5708 0 0"/>
-        <axis xyz="0 0 1"/>
+    <actuator name="left_wheel_motor"><mechanicalReduction>1</mechanicalReduction></actuator>
+  </transmission>
+
+  <transmission name="right_wheel_trans">
+    <type>transmission_interface/SimpleTransmission</type>
+    <joint name="right_wheel_joint">
+      <hardwareInterface>hardware_interface/VelocityJointInterface</hardwareInterface>
     </joint>
-    
-    <joint name="laser_joint" type="fixed">
-        <parent link="base_link"/>
-        <child link="laser"/>
-        <origin xyz="0.1 0 0.1" rpy="0 0 0"/>
-    </joint>
+    <actuator name="right_wheel_motor"><mechanicalReduction>1</mechanicalReduction></actuator>
+  </transmission>
+
+</robot>
+```
 </robot>
 ```
 
 ### Custom ROS Nodes
 
-#### Motor Control Node (Python)
+#### Hardware Interface (C++)
 
-```python
-#!/usr/bin/env python
-# minibot_controller.py
+```cpp
+// File: src/diff_drive_hardware_interface.cpp
 
-import rospy
-from geometry_msgs.msg import Twist
-from nav_msgs.msg import Odometry
-from tf.broadcaster import TransformBroadcaster
-import math
+#include <ros/ros.h>
+#include <controller_manager/controller_manager.h>
+#include <hardware_interface/joint_command_interface.h>
+#include <hardware_interface/joint_state_interface.h>
+#include <hardware_interface/robot_hw.h>
+#include <std_msgs/Int16.h>
+#include <sensor_msgs/JointState.h>
+#include <cmath>
 
-class MinibotController:
-    def __init__(self):
-        rospy.init_node('minibot_controller', anonymous=True)
-        
-        # Publishers
-        self.cmd_vel_pub = rospy.Publisher('/cmd_vel', Twist, queue_size=10)
-        
-        # Subscribers  
-        self.odom_sub = rospy.Subscriber('/odom', Odometry, self.odom_callback)
-        
-        # Transform broadcaster
-        self.tf_broadcaster = TransformBroadcaster()
-        
-        # Robot parameters
-        self.wheel_base = 0.2  # Distance between wheels (meters)
-        self.wheel_radius = 0.065  # Wheel radius (meters)
-        
-        # Current state
-        self.x = 0.0
-        self.y = 0.0
-        self.theta = 0.0
-        
-        rospy.loginfo("Minibot Controller initialized")
-    
-    def odom_callback(self, msg):
-        """Process odometry data from Arduino"""
-        # Extract position and orientation
-        self.x = msg.pose.pose.position.x
-        self.y = msg.pose.pose.position.y
-        
-        # Extract orientation (quaternion to euler)
-        orientation = msg.pose.pose.orientation
-        self.theta = self.quaternion_to_euler(orientation)
-        
-        # Broadcast transform
-        self.broadcast_transform()
-    
-    def quaternion_to_euler(self, q):
-        """Convert quaternion to euler angle (yaw)"""
-        return math.atan2(2 * (q.w * q.z + q.x * q.y), 
-                         1 - 2 * (q.y * q.y + q.z * q.z))
-    
-    def broadcast_transform(self):
-        """Broadcast transform from odom to base_link"""
-        self.tf_broadcaster.sendTransform(
-            (self.x, self.y, 0.0),
-            (0.0, 0.0, math.sin(self.theta/2), math.cos(self.theta/2)),
-            rospy.Time.now(),
-            "base_link",
-            "odom"
-        )
-    
-    def move_robot(self, linear_x, angular_z):
-        """Send velocity commands to robot"""
-        twist = Twist()
-        twist.linear.x = linear_x
-        twist.angular.z = angular_z
-        self.cmd_vel_pub.publish(twist)
-    
-    def run(self):
-        """Main control loop"""
-        rate = rospy.Rate(10)  # 10 Hz
-        
-        while not rospy.is_shutdown():
-            # Add your control logic here
-            # For now, just maintain the loop
-            rate.sleep()
+class DiffDriveHardware : public hardware_interface::RobotHW {
+public:
+  DiffDriveHardware(ros::NodeHandle& nh) : nh_(nh) {
+    for (int i = 0; i < 2; ++i) {
+      pos_[i] = 0.0;
+      vel_[i] = 0.0;
+      eff_[i] = 0.0;
+      cmd_[i] = 0.0;
+      smoothed_cmd_[i] = 0.0;
+    }
 
-if __name__ == '__main__':
-    try:
-        controller = MinibotController()
-        controller.run()
-    except rospy.ROSInterruptException:
-        pass
+    // Register interfaces
+    joint_state_interface_.registerHandle(hardware_interface::JointStateHandle("left_wheel_joint", &pos_[0], &vel_[0], &eff_[0]));
+    joint_state_interface_.registerHandle(hardware_interface::JointStateHandle("right_wheel_joint", &pos_[1], &vel_[1], &eff_[1]));
+    registerInterface(&joint_state_interface_);
+
+    velocity_joint_interface_.registerHandle(hardware_interface::JointHandle(joint_state_interface_.getHandle("left_wheel_joint"), &cmd_[0]));
+    velocity_joint_interface_.registerHandle(hardware_interface::JointHandle(joint_state_interface_.getHandle("right_wheel_joint"), &cmd_[1]));
+    registerInterface(&velocity_joint_interface_);
+
+    // ROS communication
+    joint_state_sub_ = nh_.subscribe("/joint_states", 10, &DiffDriveHardware::jointStateCallback, this);
+    motor1_pub_ = nh_.advertise<std_msgs::Int16>("/motor1_cmd", 10);
+    motor2_pub_ = nh_.advertise<std_msgs::Int16>("/motor2_cmd", 10);
+  }
+
+  void read() {
+    // Data updated from callback
+  }
+
+  void write() {
+    std_msgs::Int16 msg1, msg2;
+    const double velocity_to_pwm = 100.0;
+    const double alpha = 0.7;  // smoothing factor
+    const double deadband = 0.05;
+
+    // Apply deadband
+    for (int i = 0; i < 2; ++i) {
+      if (std::abs(cmd_[i]) < deadband) cmd_[i] = 0.0;
+    }
+
+    // Apply smoothing
+    smoothed_cmd_[0] = alpha * smoothed_cmd_[0] + (1.0 - alpha) * cmd_[0];
+    smoothed_cmd_[1] = alpha * smoothed_cmd_[1] + (1.0 - alpha) * cmd_[1];
+
+    int pwm1 = static_cast<int>(smoothed_cmd_[0] * velocity_to_pwm);
+    int pwm2 = static_cast<int>(smoothed_cmd_[1] * velocity_to_pwm);
+
+    // Clamp to PWM range
+    pwm1 = std::max(-200, std::min(200, pwm1));
+    pwm2 = std::max(-200, std::min(200, pwm2));
+
+    msg1.data = pwm1;
+    msg2.data = pwm2;
+
+    motor1_pub_.publish(msg1);
+    motor2_pub_.publish(msg2);
+  }
+
+  void jointStateCallback(const sensor_msgs::JointState::ConstPtr& msg) {
+    if (msg->position.size() >= 2) {
+      pos_[0] = msg->position[0];
+      pos_[1] = msg->position[1];
+    }
+    if (msg->velocity.size() >= 2) {
+      vel_[0] = msg->velocity[0];
+      vel_[1] = msg->velocity[1];
+    }
+  }
+
+private:
+  ros::NodeHandle nh_;
+  hardware_interface::JointStateInterface joint_state_interface_;
+  hardware_interface::VelocityJointInterface velocity_joint_interface_;
+
+  double pos_[2];
+  double vel_[2];
+  double eff_[2];
+  double cmd_[2];
+  double smoothed_cmd_[2];
+
+  ros::Subscriber joint_state_sub_;
+  ros::Publisher motor1_pub_;
+  ros::Publisher motor2_pub_;
+};
+
+int main(int argc, char** argv) {
+  ros::init(argc, argv, "diff_drive_hardware_interface");
+  ros::NodeHandle nh;
+  DiffDriveHardware robot(nh);
+  controller_manager::ControllerManager cm(&robot, nh);
+
+  ros::Duration(1.0).sleep();  // Let publishers/subscribers settle
+
+  // Warmup: publish zero PWM to avoid jerks
+  for (int i = 0; i < 5; ++i) {
+    robot.write();
+    ros::Duration(0.1).sleep();
+  }
+
+  ros::Rate rate(10);
+  ros::AsyncSpinner spinner(1);
+  spinner.start();
+
+  while (ros::ok()) {
+    robot.read();
+    cm.update(ros::Time::now(), ros::Duration(0.1));
+    robot.write();
+    rate.sleep();
+  }
+
+  return 0;
+}
 ```
 
 ---
@@ -988,17 +1145,17 @@ rosrun rviz rviz
 #### Base Navigation Launch
 
 ```xml
-<!-- minibot_navigation.launch -->
+<!-- Navigation with move_base -->
 <launch>
     <!-- Map server (if using pre-built map) -->
-    <arg name="map_file" default="$(find minibot_navigation)/maps/minibot_map.yaml"/>
+    <arg name="map_file" default="$(find mobile_robot)/map/map.yaml"/>
     <node name="map_server" pkg="map_server" type="map_server" args="$(arg map_file)" />
     
     <!-- AMCL Localization -->
-    <include file="$(find minibot_navigation)/launch/amcl.launch"/>
+    <include file="$(find mobile_robot)/launch/amcl.launch"/>
     
     <!-- Move Base -->
-    <include file="$(find minibot_navigation)/launch/move_base.launch"/>
+    <include file="$(find navigation)/launch/move_base.launch"/>
     
     <!-- Transform Configuration -->
     <node pkg="tf" type="static_transform_publisher" name="map_to_odom" 
@@ -1052,21 +1209,46 @@ rosrun rviz rviz
 ```xml
 <!-- move_base.launch -->
 <launch>
-    <node pkg="move_base" type="move_base" respawn="false" name="move_base" output="screen">
-        <!-- Load parameters -->
-        <rosparam file="$(find minibot_navigation)/config/costmap_common_params.yaml" command="load" ns="global_costmap" />
-        <rosparam file="$(find minibot_navigation)/config/costmap_common_params.yaml" command="load" ns="local_costmap" />
-        <rosparam file="$(find minibot_navigation)/config/local_costmap_params.yaml" command="load" />
-        <rosparam file="$(find minibot_navigation)/config/global_costmap_params.yaml" command="load" />
-        <rosparam file="$(find minibot_navigation)/config/base_local_planner_params.yaml" command="load" />
-        
-        <!-- Reset stuck recovery behaviors -->
-        <rosparam file="$(find minibot_navigation)/config/recovery_behaviors.yaml" command="load" />
-    </node>
-</launch>
+   <node pkg="move_base" type="move_base" respawn="false" name="move_base" output="screen">
+    <rosparam file="$(find navigation)/config/costmap_common_params.yaml" command="load" ns="global_costmap" /> 
+    <rosparam file="$(find navigation)/config/costmap_common_params.yaml" command="load" ns="local_costmap" />
+    <rosparam file="$(find navigation)/config/local_costmap_params.yaml" command="load" />
+    <rosparam file="$(find navigation)/config/global_costmap_params.yaml" command="load" /> 
+    <rosparam file="$(find navigation)/config/base_local_planner_params.yaml" command="load" />
+ </node>
+</launch> 
+<!-- Reff : http://wiki.ros.org/navigation/Tutorials/RobotSetup -->
 ```
 
 ### Navigation Parameter Files
+
+#### Controllers Configuration
+
+```yaml
+# controllers.yaml
+diff_drive_controller:
+  type: "diff_drive_controller/DiffDriveController"
+  left_wheel: 'left_wheel_joint'
+  right_wheel: 'right_wheel_joint'
+  publish_rate: 50
+  pose_covariance_diagonal: [0.001, 0.001, 0.001, 0.0, 0.0, 0.03]
+  twist_covariance_diagonal: [0.001, 0.001, 0.001, 0.0, 0.0, 0.03]
+
+  wheel_separation: 0.30     # Adjust as per your robot
+  wheel_radius: 0.05         # Adjust as per your wheel
+
+  cmd_vel_timeout: 0.25
+  enable_odom_tf: true
+
+  base_frame_id: base_footprint
+  odom_frame_id: odom
+
+  use_stamped_vel: false
+  
+joint_state_controller:
+  type: joint_state_controller/JointStateController
+  publish_rate: 50
+```
 
 #### Costmap Common Parameters
 
@@ -1498,17 +1680,14 @@ if __name__ == '__main__':
 ### Master Launch File
 
 ```xml
-<!-- minibot_bringup.launch -->
+<!-- Complete System Launch -->
 <launch>
     <!-- Robot Description -->
-    <param name="robot_description" textfile="$(find minibot_description)/urdf/minibot.urdf" />
+    <param name="robot_description" command="$(find xacro)/xacro --inorder '$(find mobile_robot)/urdf/my_robo_hardware.urdf'" />
     <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher"/>
     
     <!-- Hardware Interface -->
-    <node name="rosserial_python" pkg="rosserial_python" type="serial_node.py">
-        <param name="port" value="/dev/ttyACM0" />
-        <param name="baud" value="57600" />
-    </node>
+    <include file="$(find mobile_robot)/launch/controller.launch"/>
     
     <!-- LIDAR -->
     <node name="rplidarNode" pkg="rplidar_ros" type="rplidarNode" output="screen">
@@ -1521,7 +1700,7 @@ if __name__ == '__main__':
     
     <!-- Static Transforms -->
     <node pkg="tf" type="static_transform_publisher" name="base_to_laser"
-          args="0.1 0 0.1 0 0 0 base_link laser 50" />
+          args="0.0075 0.0 0.35 0 0 3.14 base_link laser 50" />
     
     <!-- Choose operation mode -->
     <arg name="mode" default="teleop" doc="Operation mode: teleop, slam, or navigation"/>
@@ -1534,19 +1713,19 @@ if __name__ == '__main__':
     
     <!-- SLAM Mode -->
     <group if="$(eval arg('mode') == 'slam')">
-        <include file="$(find minibot_navigation)/launch/minibot_slam.launch"/>
+        <include file="$(find mobile_robot)/launch/sim_with_map.launch"/>
         <node name="teleop_twist_keyboard" pkg="teleop_twist_keyboard" 
               type="teleop_twist_keyboard.py" output="screen" launch-prefix="xterm -e"/>
     </group>
     
     <!-- Navigation Mode -->
     <group if="$(eval arg('mode') == 'navigation')">
-        <include file="$(find minibot_navigation)/launch/minibot_navigation.launch"/>
+        <include file="$(find navigation)/launch/move_base.launch"/>
     </group>
     
     <!-- RViz Visualization -->
     <node name="rviz" pkg="rviz" type="rviz" 
-          args="-d $(find minibot_visualization)/rviz/minibot.rviz" 
+          args="-d $(find mobile_robot)/rviz/rviz.rviz" 
           required="false"/>
 </launch>
 ```
@@ -1556,14 +1735,17 @@ if __name__ == '__main__':
 #### Basic System Startup
 
 ```bash
-# Start the complete system in teleoperation mode
-roslaunch minibot_bringup minibot_bringup.launch mode:=teleop
+# Start hardware interface
+roslaunch mobile_robot controller.launch
 
-# Start with SLAM for mapping
-roslaunch minibot_bringup minibot_bringup.launch mode:=slam
+# Start navigation stack
+roslaunch navigation move_base.launch
 
-# Start with autonomous navigation
-roslaunch minibot_bringup minibot_bringup.launch mode:=navigation
+# Start simulation with map
+roslaunch mobile_robot sim_with_map.launch
+
+# Start AMCL localization
+roslaunch mobile_robot amcl.launch
 ```
 
 #### System Health Monitoring
