@@ -365,7 +365,7 @@ GND      ──► Common Ground
 ```
 RPLIDAR A1M8:
 
-Connection: LIDAR ──► USB Hub ──► Jetson Nano USB Port
+Connection: LIDAR ──► USB Port ──► Jetson Nano USB Port
 ```
 
 
@@ -1787,10 +1787,13 @@ arduino
 
 ### 3. Start Hardware Interface
 ```bash
-# Terminal 1: Start rosserial communication
+# Terminal 1: Start ros master 
+roscore
+
+# Terminal 2: Start rosserial communication
 rosrun rosserial_python serial_node.py _port:=/dev/ttyACM0 _baud:=57600
 
-# Terminal 2: Launch hardware interface
+# Terminal 3: Launch hardware interface
 roslaunch mobile_robot controller.launch
 ```
 
@@ -1817,7 +1820,7 @@ rostopic echo /scan
 # Terminal 5: Launch move_base
 roslaunch navigation move_base.launch
 
-# Terminal 6: Load map (if you have one)
+# Terminal 6: Load map (if you want any custom)
 rosrun map_server map_server /path/to/your/map.yaml
 
 # Terminal 7: Start AMCL localization
@@ -1826,7 +1829,7 @@ roslaunch mobile_robot amcl.launch
 
 ### 7. Start RViz for Visualization
 ```bash
-# Terminal 8: Launch RViz
+# Terminal 8: Launch RViz (if not launched, bcz it is launched by above launch files)
 rosrun rviz rviz
 
 # In RViz:
@@ -1861,18 +1864,6 @@ rostopic echo /odom
 rostopic echo /move_base/status
 ```
 
-### 10. Emergency Stop
-```bash
-# Stop robot movement
-rostopic pub /cmd_vel geometry_msgs/Twist "linear: {x: 0.0, y: 0.0, z: 0.0}, angular: {x: 0.0, y: 0.0, z: 0.0}"
-
-# Kill all nodes
-rosnode kill -a
-
-# Restart roscore if needed
-killall roscore
-roscore &
-```
 
 ---
 
