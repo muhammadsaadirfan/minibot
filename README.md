@@ -74,14 +74,6 @@ Before we dive into the build process, here's an overview of the Minibot's key s
 15. Future Improvements
 16. Troubleshooting
 
-### Quick Navigation
-- Hardware Requirements
-- Software Requirements
-- Installation Guide
-- Usage Instructions
-- Configuration
-- Troubleshooting
-
 ---
 
 ## Introduction & Project Overview
@@ -1370,6 +1362,121 @@ rosrun map_server map_saver -f ~/minibot_ws/src/minibot_navigation/maps/my_map
 # This creates two files:
 # - my_map.yaml (map metadata)
 # - my_map.pgm (map image)
+```
+
+---
+
+## Steps to Run the Robot
+
+### 1. Build the Workspace
+```bash
+# Navigate to your workspace
+cd ~/catkin_ws
+
+# Build the packages
+catkin_make
+
+# Source the workspace
+source devel/setup.bash
+```
+
+### 2. Upload Arduino Firmware
+```bash
+# Open Arduino IDE
+arduino
+
+# Open firmware.ino file from minibot/firmware.ino
+# Select correct board (Arduino UNO) and port
+# Upload the firmware to Arduino
+```
+
+### 3. Start Hardware Interface
+```bash
+# Terminal 1: Start rosserial communication
+rosrun rosserial_python serial_node.py _port:=/dev/ttyACM0 _baud:=57600
+
+# Terminal 2: Launch hardware interface
+roslaunch mobile_robot controller.launch
+```
+
+### 4. Test Motor Control
+```bash
+# Terminal 3: Send velocity commands
+rostopic pub /cmd_vel geometry_msgs/Twist "linear: {x: 0.2, y: 0.0, z: 0.0}, angular: {x: 0.0, y: 0.0, z: 0.0}"
+
+# Stop the robot
+rostopic pub /cmd_vel geometry_msgs/Twist "linear: {x: 0.0, y: 0.0, z: 0.0}, angular: {x: 0.0, y: 0.0, z: 0.0}"
+```
+
+### 5. Start LIDAR
+```bash
+# Terminal 4: Launch LIDAR
+rosrun rplidar_ros rplidarNode _serial_port:=/dev/ttyUSB0 _serial_baudrate:=115200 _frame_id:=laser
+
+# Check LIDAR data
+rostopic echo /scan
+```
+
+### 6. Start Navigation Stack
+```bash
+# Terminal 5: Launch move_base
+roslaunch navigation move_base.launch
+
+# Terminal 6: Load map (if you have one)
+rosrun map_server map_server /path/to/your/map.yaml
+
+# Terminal 7: Start AMCL localization
+roslaunch mobile_robot amcl.launch
+```
+
+### 7. Start RViz for Visualization
+```bash
+# Terminal 8: Launch RViz
+rosrun rviz rviz
+
+# In RViz:
+# 1. Set Fixed Frame to "map"
+# 2. Add RobotModel display
+# 3. Add LaserScan display (Topic: /scan)
+# 4. Add Map display (Topic: /map)
+# 5. Add 2D Nav Goal tool for navigation
+```
+
+### 8. Send Navigation Goals
+```bash
+# Method 1: Using RViz
+# Click "2D Nav Goal" in RViz and set target location
+
+# Method 2: Using command line
+rostopic pub /move_base_simple/goal geometry_msgs/PoseStamped "header: {frame_id: 'map'}, pose: {position: {x: 1.0, y: 1.0, z: 0.0}, orientation: {w: 1.0}}}"
+```
+
+### 9. Monitor System Status
+```bash
+# Check all running nodes
+rosnode list
+
+# Check all topics
+rostopic list
+
+# Monitor robot position
+rostopic echo /odom
+
+# Monitor navigation status
+rostopic echo /move_base/status
+```
+
+### 10. Emergency Stop
+```bash
+# Stop robot movement
+rostopic pub /cmd_vel geometry_msgs/Twist "linear: {x: 0.0, y: 0.0, z: 0.0}, angular: {x: 0.0, y: 0.0, z: 0.0}"
+
+# Kill all nodes
+rosnode kill -a
+
+# Restart roscore if needed
+killall roscore
+roscore &
 ```
 
 ---
