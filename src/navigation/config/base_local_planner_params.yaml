@@ -1,0 +1,62 @@
+# Global Planner settings
+move_base:
+  base_global_planner: "global_planner/GlobalPlanner"
+  base_local_planner: "teb_local_planner/TebLocalPlannerROS"
+
+GlobalPlanner:
+  allow_unknown: true
+  default_tolerance: 0.1         # tighter goal tolerance
+  visualize_potential: false
+  use_dijkstra: true             # A* → use_dijkstra: false
+  use_quadratic: true
+  use_grid_path: true            # generate smooth path over grid
+  old_navfn_behavior: false
+
+# Local Planner settings (TEB)
+TebLocalPlannerROS:
+  odom_topic: odom
+  map_frame: odom
+
+  # Trajectory
+  teb_autosize: true
+  dt_ref: 0.3
+  dt_hysteresis: 0.1
+  max_global_plan_lookahead_dist: 3.0
+  global_plan_overwrite_orientation: true
+  feasibility_check_no_poses: 5
+
+  # Robot
+  max_vel_x: 0.5
+  max_vel_x_backwards: 0.2
+  max_vel_theta: 1.2
+  acc_lim_x: 2.5
+  acc_lim_theta: 3.2
+  is_footprint_dynamic: false
+
+  footprint_model:
+    type: "circular"
+    radius: 0.2
+
+  # Obstacles
+  min_obstacle_dist: 0.25
+  inflation_dist: 0.3
+  include_costmap_obstacles: true
+  costmap_obstacles_behind_robot_dist: 1.0
+
+  # Optimization
+  no_inner_iterations: 5
+  no_outer_iterations: 4
+  optimization_activate: true
+  optimization_verbose: false
+
+  # Goal tolerance
+  xy_goal_tolerance: 0.1
+  yaw_goal_tolerance: 0.1
+  free_goal_vel: false
+
+  # Global plan
+  exact_arc_length: false
+  global_plan_viapoint_sep: -1
+
+  # Visualization
+  publish_feedback: true

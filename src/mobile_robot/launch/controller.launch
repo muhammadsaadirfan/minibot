@@ -1,0 +1,23 @@
+<launch>
+  <!-- Load robot description -->
+  <param name="robot_description" command="$(find xacro)/xacro --inorder '$(find mobile_robot)/urdf/my_robo_hardware.urdf'" />
+
+  <!-- Publish joint states -->
+  <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" />
+
+  <!-- Load controller params -->
+  <rosparam file="$(find mobile_robot)/config/controllers.yaml" command="load" />
+
+  <!-- Hardware interface node -->
+  <node name="hardware_interface" pkg="mobile_robot" type="diff_drive_hardware_interface" output="screen" />
+
+  <!-- Spawner for joint state controller -->
+  <node name="joint_state_spawner" pkg="controller_manager" type="spawner"
+        args="joint_state_controller" output="screen" />
+
+  <!-- Spawner for diff drive controller -->
+  <node name="diff_drive_spawner" pkg="controller_manager" type="spawner"
+        args="diff_drive_controller" output="screen">
+ 
+  </node>
+</launch>
