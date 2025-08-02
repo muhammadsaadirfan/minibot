@@ -1,4 +1,4 @@
-# Minibot: From Chassis to Code — Learn Mobile Robotics Step-by-Step
+# MiniBot: Advanced Mobile Robotics Platform for Education
 
 ---
 
