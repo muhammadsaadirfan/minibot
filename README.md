@@ -117,7 +117,9 @@ By the end of this guide, you'll have:
 ✅ **Configured SLAM** for real-time mapping  
 ✅ **Tuned navigation parameters** for optimal performance  
 ✅ **Debugged common robotics issues** you'll encounter in real projects
+
 ✅ **Simulated the robot** in Gazebo before hardware testing
+
 ✅ **Deployed on real hardware** with confidence
 
 ### Project Goals
@@ -265,57 +267,52 @@ The Minibot uses a distributed communication architecture:
 ### Data Flow Diagram
 
 ```
-         ┌────────┐
-         │ LIDAR  │
-         └──┬─────┘
-            │
-            ▼
-      ┌────────────┐
-      │ ROS Topics │◄────────────────────────────┐
-      └────┬───────┘                             │
-           │                                     │
-           ▼                                     │
-     ┌────────────┐           ┌─────────────┐    │
-     │  SLAM Node │──────────►│   Map Server │    │
-     └────┬───────┘           └────┬────────┘    │
-          │                        │             │
-          ▼                        ▼             │
-  ┌────────────┐         ┌────────────────┐      │
-  │Obstacle    │◄────────│ Local Costmap  │      │
-  │Detection   │         └────────────────┘      │
-  └────┬───────┘                                 │
-       │                                         │
-       ▼                                         │
- ┌──────────────┐       ┌────────────────┐       │
- │ Path Planner │──────►│ Global Planner │       │
- └────┬─────────┘       └────┬───────────┘       │
-      │                      ▼                   │
-      ▼              ┌──────────────┐            │
-┌────────────┐       │Navigation Cmds│───────────┘
-│ Behavior   │◄──────┘   (cmd_vel)   │
-│  Tree/SM   │
-└────┬───────┘
-     ▼
-┌─────────────┐       Serial Comm       ┌─────────────┐
-│   Arduino   │◄───────────────────────►│   ROS Node  │
-└────┬────────┘                         └─────────────┘
-     ▼
-┌─────────────┐
-│ Motor Driver│
-└────┬────────┘
-     ▼
-  ┌──────┐
-  │Wheels│
-  └──┬───┘
-     │
-     ▼
-┌─────────────┐
-│  Encoders   │
-└────┬────────┘
-     ▼
-┌─────────────┐
-│ Odometry    │──► tf ──► ROS Topics
-└─────────────┘
+                                                    ┌────────┐
+                                                    │ LIDAR  │
+                                                    └──┬─────┘
+                                                       │
+                                                       ▼
+                                                  ┌────────────┐
+                           ┌─────────────────────►│ ROS Topics │◄─────────────────┐
+                           │                      └────┬───────┘                  │
+                           │               ┌───────────┘                          │
+                           │               ▼                                      │
+                           │          ┌────────────┐     ┌─────────────┐          │
+                           │          │  SLAM Node │────►│  Map Server │          │
+                           │          └────┬───────┘     └────┬────────┘          │
+                           │               │                  │                   │
+                           │               ▼                  ▼                   │
+                           │     ┌────────────┐         ┌────────────────┐        │
+                           │     │Obstacle    │◄────────│ Local Costmap  │        │
+                           │     │Detection   │         └────────────────┘        │
+                           │     └────┬───────┘                                   │
+                           │          │                                           │
+                           │          ▼                                           │
+                           │     ┌──────────────┐       ┌────────────────┐        │
+                           │     │ Path Planner │──────►│ Global Planner │        │
+                           │     └────┬─────────┘       └────┬───────────┘        │
+                           │          │                      ▼                    │
+                           │          ▼               ┌───────────────┐           │
+                           │     ┌────────────┐       │Navigation Cmds│───────────┘
+                           │     │   Arduino  │◄──────│   (cmd_vel)   │
+                           │     └────┬───────┘       └───────────────┘
+                           │          ▼
+                           │     ┌─────────────┐
+                           │     │ Motor Driver│
+                           │     └────┬────────┘
+                           │          ▼
+                           │       ┌──────┐
+                           │       │Wheels│
+                           │       └──┬───┘
+                           │          │
+                           │          ▼
+                           │     ┌─────────────┐
+                           │     │  Encoders   │
+                           │     └────┬────────┘
+                           │          ▼
+                           │     ┌─────────────┐
+                           └─────│ Odometry    │
+                                 └─────────────┘
 ```
 
 ---
