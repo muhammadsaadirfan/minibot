@@ -245,50 +245,15 @@ LIDAR ──► ROS Topics ──► SLAM Node ──► Map
 
 ---
 
-## Hardware Assembly Guide
 
-### Step 1: Chassis Preparation
-
-First, let's prepare the mechanical foundation:
-
-```bash
-# Tools needed for this step:
-# - Screwdriver set
-# - Drill (if custom mounting holes needed)
-```
-
-1. **Unpack the chassis kit** and identify all components
-2. **Mount the motors** to the chassis using provided brackets
-3. **Install wheels** and ensure smooth rotation
-4. **Create mounting points** for electronics (Jetson Nano, Arduino, battery)
-
-### Step 2: Electronics Mounting
-
-Strategic component placement is crucial for:
-- Heat dissipation (Jetson Nano)
-- Wire management
-- Accessibility for debugging
-- Weight distribution
-
-**Recommended Layout:**
-```
-     [LIDAR]
-        │
-[Battery]──[Jetson Nano]
-    │          │
-[Arduino]──[L298N]──[Motors]
-    │
-  [LCD]
-```
-
-### Step 3: Power Distribution
+# Power Distribution
 
 Create a robust power distribution system:
 
-1. **Main Power Bus**: 7.4V from LiPo battery
+1. **Main Power Bus**: 18V from LiPo battery
 2. **5V Rail**: For Arduino, LCD, and logic circuits  
-3. **12V Rail**: For motor driver (if using 12V motors)
-4. **3.3V Rail**: For sensor interfaces
+3. **12V Rail**: For motor driver 
+
 
 **Power Budget Calculation:**
 - Jetson Nano: ~10W (2A @ 5V)
@@ -297,7 +262,7 @@ Create a robust power distribution system:
 - LIDAR: ~2.5W (500mA @ 5V)
 - **Total: ~37W peak consumption**
 
-### Step 4: Component Integration
+# Component Integration
 
 Install each major component with consideration for:
 
@@ -341,8 +306,6 @@ Digital Pin 9  ──► Motor 2 PWM (L298N)
 Digital Pin 10 ──► Motor 2 Direction 1
 Digital Pin 11 ──► Motor 2 Direction 2
 
-Analog Pin A4  ──► LCD SDA
-Analog Pin A5  ──► LCD SCL
 ```
 
 ### L298N Motor Driver Connections
@@ -351,8 +314,6 @@ Analog Pin A5  ──► LCD SCL
 L298N Pinout:
 IN1, IN2 ──► Motor 1 Direction Control (from Arduino D7, D8)
 IN3, IN4 ──► Motor 2 Direction Control (from Arduino D10, D11)
-ENA      ──► Motor 1 PWM Speed Control (from Arduino D6)
-ENB      ──► Motor 2 PWM Speed Control (from Arduino D9)
 OUT1, OUT2 ──► Motor 1 Terminals
 OUT3, OUT4 ──► Motor 2 Terminals
 VCC      ──► 7.4V Battery Positive
@@ -364,31 +325,10 @@ GND      ──► Common Ground
 
 ```
 RPLIDAR A1M8:
-Red Wire    ──► 5V Power Supply
-Black Wire  ──► Ground
-Green Wire  ──► USB Data+ (via USB adapter)
-White Wire  ──► USB Data- (via USB adapter)
 
 Connection: LIDAR ──► USB Hub ──► Jetson Nano USB Port
 ```
 
-### Power Distribution Schematic
-
-```
-Battery (7.4V LiPo)
-    │
-    ├──► L298N Motor Driver (7.4V Input)
-    │       │
-    │       └──► 5V Regulator Output ──► Arduino VIN
-    │
-    └──► Buck Converter (7.4V → 5V, 3A)
-            │
-            ├──► Jetson Nano (5V, 2A)
-            ├──► LIDAR (5V, 500mA)
-            └──► LCD Display (5V, 50mA)
-```
-
----
 
 ## Software Installation
 
