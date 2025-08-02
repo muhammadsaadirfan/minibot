@@ -1,16 +1,16 @@
-# Minibot: An Educational robot to learn Mobile Robotics Step-by-Step
+# Minibot: From Chassis to Code — Learn Mobile Robotics Step-by-Step
 
 
 ![alt text](header.png)
 ---
 
-## Introduction
+## Introduction {#introduction}
 
 #### _This comprehensive guide will show you how to build a complete educational mobile robot from scratch using ROS 1 Melodic, Jetson Nano, and Arduino. You'll craft hardware assemblies, write custom ROS nodes, integrate LIDAR navigation, and actually make your robot move autonomously like a true robotics scholar. Yes, yes—there'll be launch files, YAML configs, rosserial communication, and other ancient rituals. The robot still won't thank you. But your students will. Definitely._
 
 ---
 
-## What is the _Minibot_ Educational Platform?
+## What is the _Minibot_ Educational Platform? {#minibot-platform}
 
 The **Minibot** isn't just another robot kit—it's a complete educational ecosystem designed to teach hardware integration, embedded programming, and AI/robotics concepts using **ROS 1 Melodic**. This platform bridges the gap between theory and practice by providing:
 
@@ -55,17 +55,17 @@ Before we dive into the build process, here's an overview of the Minibot's key s
 
 ---
 
-## Table of Contents
+## Table of Contents {#table-of-contents}
 
 1. [Introduction & Project Overview](#introduction)
-2. [Bill of Materials (BOM)](#bill-of-materials)
-3. [System Architecture](#system-architecture)
-4. [Hardware Assembly Guide](#hardware-assembly)
-5. [Circuit Diagrams & Wiring](#circuit-diagrams)
-6. [Software Installation](#software-installation)
-7. [Arduino Firmware Setup](#arduino-firmware)
-8. [ROS Integration](#ros-integration)
-9. [Motor Control Implementation](#motor-control)
+2. [Project Structure](#project-structure)
+3. [Bill of Materials (BOM)](#bill-of-materials)
+4. [System Architecture](#system-architecture)
+5. [Hardware Assembly Guide](#hardware-assembly)
+6. [Circuit Diagrams & Wiring](#circuit-diagrams)
+7. [Software Installation](#software-installation)
+8. [Arduino Firmware Setup](#arduino-firmware)
+9. [ROS Integration](#ros-integration)
 10. [LIDAR Integration](#lidar-integration)
 11. [Navigation Stack Setup](#navigation-stack)
 12. [SLAM Configuration](#slam-configuration)
@@ -73,6 +73,14 @@ Before we dive into the build process, here's an overview of the Minibot's key s
 14. [Complete System Launch](#system-launch)
 15. [Future Improvements](#future-improvements)
 16. [Troubleshooting](#troubleshooting)
+
+### Quick Navigation
+- [Hardware Requirements](#hardware-requirements)
+- [Software Requirements](#software-requirements)
+- [Installation Guide](#software-installation)
+- [Usage Instructions](#usage)
+- [Configuration](#configuration)
+- [Troubleshooting](#troubleshooting)
 
 ---
 
@@ -108,9 +116,65 @@ This guide follows a hands-on approach where every concept is immediately applie
 
 ---
 
+## Project Structure {#project-structure}
+
+This project implements a complete ROS-based mobile robot system with hardware control, navigation, and simulation capabilities. The robot uses ROS Control framework for motor control, integrates with Arduino for low-level hardware interface, and includes full navigation stack configuration.
+
+```
+ros_control_final/
+├── minibot/
+│   ├── firmware.ino                    # Arduino firmware for motor control
+│   └── src/
+│       ├── mobile_robot/              # Main robot package
+│       │   ├── config/
+│       │   │   └── controllers.yaml   # ROS Control configuration
+│       │   ├── launch/
+│       │   │   ├── controller.launch  # Hardware interface launch
+│       │   │   ├── amcl.launch        # Localization
+│       │   │   ├── robot_description.launch
+│       │   │   ├── sim_with_map.launch # Simulation with map
+│       │   │   └── world.launch       # Gazebo world
+│       │   ├── map/                   # Pre-built maps
+│       │   ├── src/
+│       │   │   └── diff_drive_hardware_interface.cpp # Hardware interface
+│       │   ├── urdf/                  # Robot description files
+│       │   │   ├── meshes/            # 3D models
+│       │   │   ├── my_robo_hardware.urdf
+│       │   │   └── my_robo_simulation.urdf
+│       │   └── worlds/                # Gazebo world files
+│       └── navigation/                # Navigation package
+│           ├── config/                # Navigation parameters
+│           ├── launch/
+│           │   └── move_base.launch   # Navigation stack
+│           └── rviz/                  # RViz configurations
+```
+
+### Key Features
+
+#### Hardware Interface
+- **ROS Control Integration**: Custom hardware interface for differential drive robot
+- **Arduino Communication**: rosserial-based communication with Arduino for motor control
+- **Encoder Feedback**: Real-time encoder reading for odometry
+- **Motor Control**: PWM-based motor control with smoothing and deadband
+
+#### Navigation System
+- **Move Base**: Complete navigation stack with global and local planning
+- **Costmap Configuration**: Optimized costmaps for obstacle avoidance
+- **Path Planning**: DWA local planner with configurable parameters
+- **Localization**: AMCL for robot localization
+
+#### Simulation Support
+- **Gazebo Integration**: Full simulation environment with custom world
+- **URDF Models**: Detailed robot description with 3D meshes
+- **Map Support**: Pre-built maps for testing and development
+
+---
+
+**[↑ Back to Top](#table-of-contents)**
+
 ## Bill of Materials (BOM) {#bill-of-materials}
 
-### Core Hardware Components
+### Core Hardware Components {#core-hardware-components}
 
 | Component | Quantity | Purpose | Estimated Cost |
 |-----------|----------|---------|----------------|
@@ -126,7 +190,7 @@ This guide follows a hands-on approach where every concept is immediately applie
 
 **Total Estimated Cost: ~$351**
 
-### Tools Required
+### Tools Required {#tools-required}
 
 - Soldering iron and solder
 - Multimeter for electrical testing
@@ -135,7 +199,7 @@ This guide follows a hands-on approach where every concept is immediately applie
 - Hot glue gun (optional)
 - 3D printer access (optional, for custom mounts)
 
-### Software Requirements
+### Software Requirements {#software-requirements}
 
 | Software | Version | Purpose |
 |----------|---------|---------|
@@ -145,6 +209,8 @@ This guide follows a hands-on approach where every concept is immediately applie
 | **Python** | 2.7/3.6 | ROS node development |
 
 ---
+
+**[↑ Back to Top](#table-of-contents)**
 
 ## System Architecture {#system-architecture}
 
@@ -159,7 +225,7 @@ This guide follows a hands-on approach where every concept is immediately applie
           ├──────────────────────┼──────────────────────┤
           │                      │                      │
 ┌─────────▼───────┐    ┌─────────▼───────┐    ┌─────────▼───────┐
-│ Motor Control   │    │  Sensor Fusion │    │ System Monitor  │
+│ Motor Control   │    │  Sensor Fusion  │    │ System Monitor  │
 │   (Arduino)     │    │    (ROS Node)   │    │   (LCD Display) │
 └─────────┬───────┘    └─────────────────┘    └─────────────────┘
           │
@@ -212,6 +278,8 @@ LIDAR ──► ROS Topics ──► SLAM Node ──► Map
 ```
 
 ---
+
+**[↑ Back to Top](#table-of-contents)**
 
 ## Hardware Assembly Guide {#hardware-assembly}
 
@@ -1863,4 +1931,8 @@ rostopic bw /scan
 rosparam set /rplidarNode/scan_frequency 5.0  # Reduce from 10Hz
 
 # Limit navigation update rates
-rosparam set /move_base/controller_frequency 10.0  # Reduce from
+rosparam set /move_base/controller_frequency 10.0  # Reduce from 20Hz
+
+---
+
+**[↑ Back to Top](#table-of-contents)**
