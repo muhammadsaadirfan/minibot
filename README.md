@@ -117,9 +117,7 @@ By the end of this guide, you'll have:
 ✅ **Configured SLAM** for real-time mapping  
 ✅ **Tuned navigation parameters** for optimal performance  
 ✅ **Debugged common robotics issues** you'll encounter in real projects
-
 ✅ **Simulated the robot** in Gazebo before hardware testing
-
 ✅ **Deployed on real hardware** with confidence
 
 ### Project Goals
