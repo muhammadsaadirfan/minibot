@@ -497,6 +497,8 @@ sudo apt install ros-melodic-joint-state-publisher
 ```bash
 # Create catkin workspace
 mkdir -p ~/minibot_ws/src
+cd ~/minibot_ws/src
+git clone https://github.com/muhammadsaadirfan/minibot.git
 cd ~/minibot_ws/
 catkin_make
 
