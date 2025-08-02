@@ -1,10 +1,10 @@
-# Good News, Everyone! You're About to Build the Ultimate Educational Minibot!
+# Minibot: From Chassis to Code — Learn Mobile Robotics Step-by-Step
 
-![Minibot Hero Image - Add your completed robot image here]
 
+![alt text](header.png)
 ---
 
-## TL;DR
+## Introduction
 
 #### _This comprehensive guide will show you how to build a complete educational mobile robot from scratch using ROS 1 Melodic, Jetson Nano, and Arduino. You'll craft hardware assemblies, write custom ROS nodes, integrate LIDAR navigation, and actually make your robot move autonomously like a true robotics scholar. Yes, yes—there'll be launch files, YAML configs, rosserial communication, and other ancient rituals. The robot still won't thank you. But your students will. Definitely._
 
@@ -486,150 +486,159 @@ Install these libraries through Arduino IDE Library Manager:
 ```cpp
 // minibot_arduino_firmware.ino
 #include <ros.h>
-#include <geometry_msgs/Twist.h>
-#include <nav_msgs/Odometry.h>
-#include <Encoder.h>
-#include <LiquidCrystal_I2C.h>
+#include <std_msgs/Int16.h>
+#include <sensor_msgs/JointState.h>
+#include <PinChangeInt.h>
+#include <string.h>  
 
-// ROS Node Handle
+// ==== MOTOR ENCODER AND CONTROL PINS ====
+#define ENC_A1  2     
+#define ENC_B1  8     
+
+#define ENC_A2  3     
+#define ENC_B2  7     
+
+#define M1A     9
+#define M1B     10
+
+#define M2A     5
+#define M2B     6
+
+#define COUNTS_PER_REV 246.0
+
+// ==== Encoder Variables ====
+volatile long encoderPos1 = 0;
+volatile long encoderPos2 = 0;
+volatile int dir1 = 1;
+volatile int dir2 = 1;
+
+// ==== Motor PWM Values ====
+int pwm1 = 0;
+int pwm2 = 0;
+
+unsigned long lastTime = 0;
+
+// ==== ROS Node Handle ====
 ros::NodeHandle nh;
 
-// Motor Control Variables
-float linear_velocity = 0.0;
-float angular_velocity = 0.0;
+// ==== ROS Messages ====
+sensor_msgs::JointState joint_state_msg;
+char* joint_names[] = {"left_wheel_joint", "right_wheel_joint"};
+float positions[2];
+float velocities[2];
 
-// Encoder Objects
-Encoder encoder_left(2, 3);   // Pins 2, 3 for left motor
-Encoder encoder_right(4, 5);  // Pins 4, 5 for right motor
+// ==== ROS Publisher ====
+ros::Publisher joint_pub("joint_states", &joint_state_msg);
 
-// LCD Display
-LiquidCrystal_I2C lcd(0x27, 16, 2);
-
-// Motor Driver Pins
-const int motor1_pwm = 6;
-const int motor1_dir1 = 7;
-const int motor1_dir2 = 8;
-const int motor2_pwm = 9;
-const int motor2_dir1 = 10;
-const int motor2_dir2 = 11;
-
-// Callback function for velocity commands
-void cmdVelCallback(const geometry_msgs::Twist& cmd_msg) {
-    linear_velocity = cmd_msg.linear.x;
-    angular_velocity = cmd_msg.angular.z;
-    
-    // Update LCD display
-    lcd.clear();
-    lcd.print("Lin: "); lcd.print(linear_velocity);
-    lcd.setCursor(0, 1);
-    lcd.print("Ang: "); lcd.print(angular_velocity);
+// ==== ROS Subscriber Callbacks ====
+void pwm1_cb(const std_msgs::Int16 &cmd) {
+  pwm1 = cmd.data;
+}
+void pwm2_cb(const std_msgs::Int16 &cmd) {
+  pwm2 = cmd.data;
 }
 
-// ROS Subscriber
-ros::Subscriber<geometry_msgs::Twist> cmd_vel_sub("cmd_vel", cmdVelCallback);
+ros::Subscriber<std_msgs::Int16> pwm1_sub("motor1_cmd", &pwm1_cb);
+ros::Subscriber<std_msgs::Int16> pwm2_sub("motor2_cmd", &pwm2_cb);
 
-// ROS Publisher for odometry
-nav_msgs::Odometry odom_msg;
-ros::Publisher odom_pub("odom", &odom_msg);
-
+// ==== Setup ====
 void setup() {
-    // Initialize ROS
-    nh.initNode();
-    nh.subscribe(cmd_vel_sub);
-    nh.advertise(odom_pub);
-    
-    // Initialize motor pins
-    pinMode(motor1_pwm, OUTPUT);
-    pinMode(motor1_dir1, OUTPUT);
-    pinMode(motor1_dir2, OUTPUT);
-    pinMode(motor2_pwm, OUTPUT);
-    pinMode(motor2_dir1, OUTPUT);
-    pinMode(motor2_dir2, OUTPUT);
-    
-    // Initialize LCD
-    lcd.init();
-    lcd.backlight();
-    lcd.print("Minibot Ready!");
-    
-    // Wait for ROS connection
-    while(!nh.connected()) {
-        nh.spinOnce();
-        delay(100);
-    }
+  // Encoder pins
+  pinMode(ENC_A1, INPUT_PULLUP);
+  pinMode(ENC_B1, INPUT_PULLUP);
+  attachInterrupt(digitalPinToInterrupt(ENC_A1), encoderISR1, FALLING);
+
+  pinMode(ENC_A2, INPUT_PULLUP);
+  pinMode(ENC_B2, INPUT_PULLUP);
+  attachInterrupt(digitalPinToInterrupt(ENC_A2), encoderISR2, FALLING);
+
+  // Motor control pins
+  pinMode(M1A, OUTPUT);
+  pinMode(M1B, OUTPUT);
+  pinMode(M2A, OUTPUT);
+  pinMode(M2B, OUTPUT);
+
+  // ROS Setup
+  nh.initNode();
+  nh.subscribe(pwm1_sub);
+  nh.subscribe(pwm2_sub);
+  nh.advertise(joint_pub);
+
+  // Joint State Message setup
+  joint_state_msg.name_length = 2;
+  joint_state_msg.name = joint_names;
+  joint_state_msg.position_length = 2;
+  joint_state_msg.position = positions;
+  joint_state_msg.velocity_length = 2;
+  joint_state_msg.velocity = velocities;
 }
 
+// ==== Loop ====
 void loop() {
-    // Convert velocity commands to motor speeds
-    updateMotorSpeeds();
-    
-    // Read encoders and publish odometry
-    publishOdometry();
-    
-    // Handle ROS communication
-    nh.spinOnce();
-    delay(50);  // 20Hz update rate
+  unsigned long now = millis();
+
+  // Set motor speeds
+  pwmOut(M1A, M1B, pwm1);
+  pwmOut(M2A, M2B, pwm2);
+
+  // Publish joint states every 100ms
+  if (now - lastTime >= 100) {
+    joint_state_msg.header.stamp = nh.now();
+
+    joint_state_msg.position[0] = (2.0 * 3.1416 * encoderPos1) / COUNTS_PER_REV;
+    joint_state_msg.position[1] = (2.0 * 3.1416 * encoderPos2) / COUNTS_PER_REV;
+
+    joint_state_msg.velocity[0] = 0;  // Optional: implement real velocity
+    joint_state_msg.velocity[1] = 0;
+
+    joint_pub.publish(&joint_state_msg);
+    lastTime = now;
+  }
+
+  nh.spinOnce();
+  delay(10);
 }
 
-void updateMotorSpeeds() {
-    // Differential drive kinematics
-    // wheel_base = distance between wheels
-    float wheel_base = 0.2;  // 20cm between wheels
-    
-    float left_speed = linear_velocity - (angular_velocity * wheel_base / 2.0);
-    float right_speed = linear_velocity + (angular_velocity * wheel_base / 2.0);
-    
-    // Convert to PWM values (0-255)
-    int left_pwm = constrain(abs(left_speed) * 255, 0, 255);
-    int right_pwm = constrain(abs(right_speed) * 255, 0, 255);
-    
-    // Set motor directions and speeds
-    setMotor(1, left_speed > 0, left_pwm);
-    setMotor(2, right_speed > 0, right_pwm);
+// ==== PWM Motor Output ====
+void pwmOut(int pinA, int pinB, int out) {
+  out = constrain(out, -255, 255);
+  if (out >= 0) {
+    analogWrite(pinA, 0);
+    analogWrite(pinB, out);
+  } else {
+    analogWrite(pinA, -out);
+    analogWrite(pinB, 0);
+  }
 }
 
-void setMotor(int motor, bool forward, int speed) {
-    if (motor == 1) {  // Left motor
-        digitalWrite(motor1_dir1, forward ? HIGH : LOW);
-        digitalWrite(motor1_dir2, forward ? LOW : HIGH);
-        analogWrite(motor1_pwm, speed);
-    } else {  // Right motor
-        digitalWrite(motor2_dir1, forward ? HIGH : LOW);
-        digitalWrite(motor2_dir2, forward ? LOW : HIGH);
-        analogWrite(motor2_pwm, speed);
-    }
+// ==== Encoder Interrupt Service Routines (ISR) ====
+void encoderISR1() {
+  // ENC_B1 is on pin 8 → Port B bit 0 (PB0)
+  if (PINB & (1 << 0)) {
+    encoderPos1++;
+    dir1 = 1;
+  } else {
+    encoderPos1--;
+    dir1 = -1;
+  }
 }
 
-void publishOdometry() {
-    // Read encoder values
-    long left_count = encoder_left.read();
-    long right_count = encoder_right.read();
-    
-    // Calculate distances (implement based on your encoder specifications)
-    // This is a simplified version - you'll need to implement proper odometry
-    
-    static unsigned long last_time = millis();
-    unsigned long current_time = millis();
-    float dt = (current_time - last_time) / 1000.0;
-    
-    // Publish odometry message
-    odom_msg.header.stamp = nh.now();
-    odom_msg.header.frame_id = "odom";
-    odom_msg.child_frame_id = "base_link";
-    
-    // Set position and velocity (simplified)
-    odom_msg.pose.pose.position.x = 0.0;  // Calculate from encoders
-    odom_msg.pose.pose.position.y = 0.0;
-    odom_msg.twist.twist.linear.x = linear_velocity;
-    odom_msg.twist.twist.angular.z = angular_velocity;
-    
-    odom_pub.publish(&odom_msg);
-    last_time = current_time;
+void encoderISR2() {
+  // ENC_B2 is on pin 7 → Port D bit 7 (PD7)
+  if (PIND & (1 << 7)) {
+    encoderPos2++;
+    dir2 = 1;
+  } else {
+    encoderPos2--;
+    dir2 = -1;
+  }
 }
+
 ```
 
 ### Uploading Firmware
 
-1. **Connect Arduino to Jetson Nano** via USB
+1. **Connect Arduino to Your PC** via USB
 2. **Select correct board and port** in Arduino IDE
 3. **Compile and upload** the firmware
 4. **Verify communication** using Serial Monitor
