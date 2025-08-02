@@ -1,4 +1,4 @@
-# Minibot: From Chassis to Code — Learn Mobile Robotics Step-by-Step
+# Minibot: An Educational robot to learn Mobile Robotics Step-by-Step
 
 
 ![alt text](header.png)
