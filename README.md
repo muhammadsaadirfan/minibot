@@ -4,13 +4,13 @@
 ![alt text](header.png)
 ---
 
-## Introduction {#introduction}
+## Introduction
 
 #### _This comprehensive guide will show you how to build a complete educational mobile robot from scratch using ROS 1 Melodic, Jetson Nano, and Arduino. You'll craft hardware assemblies, write custom ROS nodes, integrate LIDAR navigation, and actually make your robot move autonomously like a true robotics scholar. Yes, yes—there'll be launch files, YAML configs, rosserial communication, and other ancient rituals. The robot still won't thank you. But your students will. Definitely._
 
 ---
 
-## What is the _Minibot_ Educational Platform? {#minibot-platform}
+## What is the _Minibot_ Educational Platform?
 
 The **Minibot** isn't just another robot kit—it's a complete educational ecosystem designed to teach hardware integration, embedded programming, and AI/robotics concepts using **ROS 1 Melodic**. This platform bridges the gap between theory and practice by providing:
 
@@ -25,7 +25,7 @@ Imagine robotics education is a vast ocean. The **Minibot** is your well-equippe
 
 Yes, it might sound complex. But don't worry! This tutorial walks you through every single step—from selecting components to running autonomous navigation. We'll build everything modularly, so you can understand each subsystem before integrating the complete system. It's educational, it's practical, and honestly......it's the robot platform you wish existed when you started learning robotics!
 
-![System Architecture Diagram - Add complete system overview here]
+![alt text](system.png)
 
 Before we dive into the build process, here's an overview of the Minibot's key subsystems:
 
@@ -55,36 +55,36 @@ Before we dive into the build process, here's an overview of the Minibot's key s
 
 ---
 
-## Table of Contents {#table-of-contents}
+## Table of Contents
 
-1. [Introduction & Project Overview](#introduction)
-2. [Project Structure](#project-structure)
-3. [Bill of Materials (BOM)](#bill-of-materials)
-4. [System Architecture](#system-architecture)
-5. [Hardware Assembly Guide](#hardware-assembly)
-6. [Circuit Diagrams & Wiring](#circuit-diagrams)
-7. [Software Installation](#software-installation)
-8. [Arduino Firmware Setup](#arduino-firmware)
-9. [ROS Integration](#ros-integration)
-10. [LIDAR Integration](#lidar-integration)
-11. [Navigation Stack Setup](#navigation-stack)
-12. [SLAM Configuration](#slam-configuration)
-13. [Testing & Debugging](#testing-debugging)
-14. [Complete System Launch](#system-launch)
-15. [Future Improvements](#future-improvements)
-16. [Troubleshooting](#troubleshooting)
+1. Introduction & Project Overview
+2. Project Structure
+3. Bill of Materials (BOM)
+4. System Architecture
+5. Hardware Assembly Guide
+6. Circuit Diagrams & Wiring
+7. Software Installation
+8. Arduino Firmware Setup
+9. ROS Integration
+10. LIDAR Integration
+11. Navigation Stack Setup
+12. SLAM Configuration
+13. Testing & Debugging
+14. Complete System Launch
+15. Future Improvements
+16. Troubleshooting
 
 ### Quick Navigation
-- [Hardware Requirements](#hardware-requirements)
-- [Software Requirements](#software-requirements)
-- [Installation Guide](#software-installation)
-- [Usage Instructions](#usage)
-- [Configuration](#configuration)
-- [Troubleshooting](#troubleshooting)
+- Hardware Requirements
+- Software Requirements
+- Installation Guide
+- Usage Instructions
+- Configuration
+- Troubleshooting
 
 ---
 
-## Introduction & Project Overview {#introduction}
+## Introduction & Project Overview
 
 ### Who This Guide Is For
 
@@ -116,7 +116,7 @@ This guide follows a hands-on approach where every concept is immediately applie
 
 ---
 
-## Project Structure {#project-structure}
+## Project Structure
 
 This project implements a complete ROS-based mobile robot system with hardware control, navigation, and simulation capabilities. The robot uses ROS Control framework for motor control, integrates with Arduino for low-level hardware interface, and includes full navigation stack configuration.
 
@@ -170,11 +170,9 @@ ros_control_final/
 
 ---
 
-**[↑ Back to Top](#table-of-contents)**
+## Bill of Materials (BOM)
 
-## Bill of Materials (BOM) {#bill-of-materials}
-
-### Core Hardware Components {#core-hardware-components}
+### Core Hardware Components
 
 | Component | Quantity | Purpose | Estimated Cost |
 |-----------|----------|---------|----------------|
@@ -190,7 +188,7 @@ ros_control_final/
 
 **Total Estimated Cost: ~$351**
 
-### Tools Required {#tools-required}
+### Tools Required
 
 - Soldering iron and solder
 - Multimeter for electrical testing
@@ -199,7 +197,7 @@ ros_control_final/
 - Hot glue gun (optional)
 - 3D printer access (optional, for custom mounts)
 
-### Software Requirements {#software-requirements}
+### Software Requirements
 
 | Software | Version | Purpose |
 |----------|---------|---------|
@@ -209,38 +207,6 @@ ros_control_final/
 | **Python** | 2.7/3.6 | ROS node development |
 
 ---
-
-**[↑ Back to Top](#table-of-contents)**
-
-## System Architecture {#system-architecture}
-
-### High-Level System Overview
-
-```
-┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
-│   ROS Master    │    │   LIDAR Sensor  │    │  Battery Pack   │
-│  (Jetson Nano)  │    │   (Navigation)  │    │   (Power Dist)  │
-└─────────┬───────┘    └─────────┬───────┘    └─────────┬───────┘
-          │                      │                      │
-          ├──────────────────────┼──────────────────────┤
-          │                      │                      │
-┌─────────▼───────┐    ┌─────────▼───────┐    ┌─────────▼───────┐
-│ Motor Control   │    │  Sensor Fusion  │    │ System Monitor  │
-│   (Arduino)     │    │    (ROS Node)   │    │   (LCD Display) │
-└─────────┬───────┘    └─────────────────┘    └─────────────────┘
-          │
-          ▼
-┌─────────────────┐
-│  L298N Driver   │
-│  (Motor Power)  │
-└─────────┬───────┘
-          │
-          ▼
-┌─────────────────┐
-│ Encoder Motors  │
-│  (Locomotion)   │
-└─────────────────┘
-```
 
 ### Communication Architecture
 
@@ -279,9 +245,7 @@ LIDAR ──► ROS Topics ──► SLAM Node ──► Map
 
 ---
 
-**[↑ Back to Top](#table-of-contents)**
-
-## Hardware Assembly Guide {#hardware-assembly}
+## Hardware Assembly Guide
 
 ### Step 1: Chassis Preparation
 
@@ -354,7 +318,7 @@ Install each major component with consideration for:
 
 ---
 
-## Circuit Diagrams & Wiring {#circuit-diagrams}
+## Circuit Diagrams & Wiring
 
 ### Master Wiring Diagram
 
@@ -426,7 +390,7 @@ Battery (7.4V LiPo)
 
 ---
 
-## Software Installation {#software-installation}
+## Software Installation
 
 ### Installing Ubuntu 18.04 on Jetson Nano
 
@@ -521,7 +485,7 @@ source ~/.bashrc
 
 ---
 
-## Arduino Firmware Setup {#arduino-firmware}
+## Arduino Firmware Setup
 
 ### Installing Arduino IDE and Libraries
 
@@ -713,7 +677,7 @@ void encoderISR2() {
 
 ---
 
-## ROS Integration {#ros-integration}
+## ROS Integration
 
 ### Setting up rosserial Communication
 
@@ -1069,7 +1033,7 @@ int main(int argc, char** argv) {
 
 ---
 
-## LIDAR Integration {#lidar-integration}
+## LIDAR Integration
 
 ### RPLIDAR ROS Package Setup
 
@@ -1138,7 +1102,7 @@ rosrun rviz rviz
 
 ---
 
-## Navigation Stack Setup {#navigation-stack}
+## Navigation Stack Setup
 
 ### Creating Navigation Launch Files
 
@@ -1349,7 +1313,7 @@ TrajectoryPlannerROS:
 
 ---
 
-## SLAM Configuration {#slam-configuration}
+## SLAM Configuration
 
 ### Setting up gmapping for SLAM
 
@@ -1470,7 +1434,7 @@ rosrun map_server map_saver -f ~/minibot_ws/src/minibot_navigation/maps/my_map
 
 ---
 
-## Testing & Debugging {#testing-debugging}
+## Testing & Debugging
 
 ### System Verification Checklist
 
@@ -1603,4 +1567,4 @@ rosparam set /slam_gmapping/stt 0.01
 rosrun teleop_twist_keyboard teleop_twist_keyboard.py
 ```
 
-**[↑ Back to Top](#table-of-contents)**
+
