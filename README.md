@@ -117,7 +117,9 @@ By the end of this guide, you'll have:
 ✅ **Configured SLAM** for real-time mapping  
 ✅ **Tuned navigation parameters** for optimal performance  
 ✅ **Debugged common robotics issues** you'll encounter in real projects
+
 ✅ **Simulated the robot** in Gazebo before hardware testing
+
 ✅ **Deployed on real hardware** with confidence
 
 ### Project Goals
@@ -235,7 +237,7 @@ ros_control_final/
 | **Ubuntu** | 18.04 LTS | Operating system for ROS 1 Melodic |
 | **ROS 1** | Melodic | Robotic middleware framework |
 | **Arduino IDE** | 1.8+ | Programming Arduino firmware |
-| **Python** | 2.7/3.6 | ROS node development |
+| **Python** | 2.7| ROS node development |
 
 </div>
 
@@ -265,17 +267,57 @@ The Minibot uses a distributed communication architecture:
 ### Data Flow Diagram
 
 ```
-LIDAR ──► ROS Topics ──► SLAM Node ──► Map
-  │                        │           │
-  │                        ▼           ▼
-  └──► Obstacle ──► Path Planner ──► Navigation
-      Detection              │         Commands
-                             │           │
-                             ▼           ▼
-                        Arduino ──► Motor Driver ──► Wheels
-                             ▲           
-                             │           
-                        Encoders ──► Odometry ──► ROS Topics
+         ┌────────┐
+         │ LIDAR  │
+         └──┬─────┘
+            │
+            ▼
+      ┌────────────┐
+      │ ROS Topics │◄────────────────────────────┐
+      └────┬───────┘                             │
+           │                                     │
+           ▼                                     │
+     ┌────────────┐           ┌─────────────┐    │
+     │  SLAM Node │──────────►│   Map Server │    │
+     └────┬───────┘           └────┬────────┘    │
+          │                        │             │
+          ▼                        ▼             │
+  ┌────────────┐         ┌────────────────┐      │
+  │Obstacle    │◄────────│ Local Costmap  │      │
+  │Detection   │         └────────────────┘      │
+  └────┬───────┘                                 │
+       │                                         │
+       ▼                                         │
+ ┌──────────────┐       ┌────────────────┐       │
+ │ Path Planner │──────►│ Global Planner │       │
+ └────┬─────────┘       └────┬───────────┘       │
+      │                      ▼                   │
+      ▼              ┌──────────────┐            │
+┌────────────┐       │Navigation Cmds│───────────┘
+│ Behavior   │◄──────┘   (cmd_vel)   │
+│  Tree/SM   │
+└────┬───────┘
+     ▼
+┌─────────────┐       Serial Comm       ┌─────────────┐
+│   Arduino   │◄───────────────────────►│   ROS Node  │
+└────┬────────┘                         └─────────────┘
+     ▼
+┌─────────────┐
+│ Motor Driver│
+└────┬────────┘
+     ▼
+  ┌──────┐
+  │Wheels│
+  └──┬───┘
+     │
+     ▼
+┌─────────────┐
+│  Encoders   │
+└────┬────────┘
+     ▼
+┌─────────────┐
+│ Odometry    │──► tf ──► ROS Topics
+└─────────────┘
 ```
 
 ---
