@@ -1,16 +1,42 @@
 # Minibot: From Chassis to Code — Learn Mobile Robotics Step-by-Step
 
-
-![alt text](header.png)
 ---
 
-## Introduction
+![alt text](header.png)
+
+---
+
+## Section Styling
+<style>
+.section-border {
+    border: 2px solid #007acc;
+    border-radius: 8px;
+    padding: 20px;
+    margin: 20px 0;
+    background-color: #f8f9fa;
+}
+.section-header {
+    color: #007acc;
+    border-bottom: 2px solid #007acc;
+    padding-bottom: 10px;
+    margin-bottom: 20px;
+}
+</style>
+---
+
+<div class="section-border">
+
+## 1. Introduction
 
 #### _This comprehensive guide will show you how to build a complete educational mobile robot from scratch using ROS 1 Melodic, Jetson Nano, and Arduino. You'll craft hardware assemblies, write custom ROS nodes, integrate LIDAR navigation, and actually make your robot move autonomously like a true roboticist_
 
+</div>
+
 ---
 
-## What is the _Minibot_ Educational Platform?
+<div class="section-border">
+
+## 2. What is the _Minibot_ Educational Platform?
 
 The **Minibot** isn't just another robot kit—it's a complete educational ecosystem designed to teach hardware integration, embedded programming, and AI/robotics concepts using **ROS 1 Melodic**. This platform bridges the gap between theory and practice by providing:
 
@@ -53,9 +79,13 @@ Before we dive into the build process, here's an overview of the Minibot's key s
    - Costmap-based obstacle avoidance
    - tf tree for coordinate transformations
 
+</div>
+
 ---
 
-## Table of Contents
+<div class="section-border">
+
+## 3. Table of Contents
 
 1. Introduction & Project Overview
 2. Project Structure
@@ -77,9 +107,13 @@ Before we dive into the build process, here's an overview of the Minibot's key s
 18. Future Improvements
 19. Troubleshooting
 
+</div>
+
 ---
 
-## Introduction & Project Overview
+<div class="section-border">
+
+## 4. Introduction & Project Overview
 
 ### Who This Guide Is For
 
@@ -123,9 +157,13 @@ _"The best way to learn robotics is to build robots."_
 
 This guide follows a hands-on approach where every concept is immediately applied to the physical system. You won't just read about coordinate transforms—you'll implement them. You won't just study SLAM algorithms—you'll watch your robot build maps in real-time.
 
+</div>
+
 ---
 
-## Project Structure
+<div class="section-border">
+
+## 5. Project Structure
 
 This project implements a complete ROS-based mobile robot system with hardware control, navigation, and simulation capabilities. The robot uses ROS Control framework for motor control, integrates with Arduino for low-level hardware interface, and includes full navigation stack configuration.
 
@@ -177,9 +215,13 @@ ros_control_final/
 - **URDF Models**: Detailed robot description with 3D meshes
 - **Map Support**: Pre-built maps for testing and development
 
+</div>
+
 ---
 
-## Bill of Materials (BOM)
+<div class="section-border">
+
+## 6. Bill of Materials (BOM)
 
 ### Core Hardware Components
 
@@ -215,7 +257,11 @@ ros_control_final/
 | **Arduino IDE** | 1.8+ | Programming Arduino firmware |
 | **Python** | 2.7/3.6 | ROS node development |
 
+</div>
+
 ---
+
+<div class="section-border">
 
 ### Communication Architecture
 
@@ -290,9 +336,13 @@ Install each major component with consideration for:
 - Secure mounting to prevent vibration
 - Appropriate height for navigation tasks
 
+</div>
+
 ---
 
-## Circuit Diagrams & Wiring
+<div class="section-border">
+
+## 7. Circuit Diagrams & Wiring
 
 ### Master Wiring Diagram
 
@@ -339,7 +389,13 @@ Connection: LIDAR ──► USB Hub ──► Jetson Nano USB Port
 ```
 
 
-## Software Installation
+</div>
+
+---
+
+<div class="section-border">
+
+## 8. Software Installation
 
 ### Installing Ubuntu 18.04 on Jetson Nano
 
@@ -434,7 +490,13 @@ source ~/.bashrc
 
 ---
 
-## Simulation Setup & Running the Robot in Simulation
+</div>
+
+---
+
+<div class="section-border">
+
+## 9. Simulation Setup & Running the Robot in Simulation
 
 ### Why Start with Simulation?
 
@@ -554,7 +616,13 @@ rosparam set /gazebo/physics/type "ode"
 
 ---
 
-## Arduino Firmware Setup
+</div>
+
+---
+
+<div class="section-border">
+
+## 10. Arduino Firmware Setup
 
 ### Installing Arduino IDE and Libraries
 
@@ -746,7 +814,13 @@ void encoderISR2() {
 
 ---
 
-## ROS Integration
+</div>
+
+---
+
+<div class="section-border">
+
+## 11. ROS Integration
 
 ### Setting up rosserial Communication
 
@@ -1102,7 +1176,13 @@ int main(int argc, char** argv) {
 
 ---
 
-## LIDAR Integration
+</div>
+
+---
+
+<div class="section-border">
+
+## 12. LIDAR Integration
 
 ### RPLIDAR ROS Package Setup
 
@@ -1171,7 +1251,13 @@ rosrun rviz rviz
 
 ---
 
-## Running the Robot on Real Hardware
+</div>
+
+---
+
+<div class="section-border">
+
+## 13. Running the Robot on Real Hardware
 
 ### Hardware Preparation Checklist
 
@@ -1345,7 +1431,13 @@ Your robot is ready when:
 
 ---
 
-## Navigation Stack Setup
+</div>
+
+---
+
+<div class="section-border">
+
+## 14. Navigation Stack Setup
 
 ### Creating Navigation Launch Files
 
@@ -1556,7 +1648,13 @@ TrajectoryPlannerROS:
 
 ---
 
-## SLAM Configuration
+</div>
+
+---
+
+<div class="section-border">
+
+## 15. SLAM Configuration
 
 ### Setting up gmapping for SLAM
 
@@ -1677,7 +1775,13 @@ rosrun map_server map_saver -f ~/minibot_ws/src/minibot_navigation/maps/my_map
 
 ---
 
-## Steps to Run the Robot
+</div>
+
+---
+
+<div class="section-border">
+
+## 16. Steps to Run the Robot
 
 ### 1. Build the Workspace
 ```bash
@@ -1792,7 +1896,13 @@ roscore &
 
 ---
 
-## Testing & Debugging
+</div>
+
+---
+
+<div class="section-border">
+
+## 17. Testing & Debugging
 
 ### System Verification Checklist
 
@@ -1923,6 +2033,9 @@ rosparam set /slam_gmapping/stt 0.01
 
 # Ensure adequate motion during mapping
 rosrun teleop_twist_keyboard teleop_twist_keyboard.py
+```
+
+</div>
 ```
 
 
