@@ -150,7 +150,6 @@ This guide follows a hands-on approach where every concept is immediately applie
 This project implements a complete ROS-based mobile robot system with hardware control, navigation, and simulation capabilities. The robot uses ROS Control framework for motor control, integrates with Arduino for low-level hardware interface, and includes full navigation stack configuration.
 
 ```
-ros_control_final/
 ├── minibot/
 │   ├── firmware.ino                    # Arduino firmware for motor control
 │   └── src/
@@ -181,7 +180,7 @@ ros_control_final/
 ### Key Features
 
 #### Hardware Interface
-- **ROS Control Integration**: Custom hardware interface for differential drive robot
+- **ROS Control Integration**: Custom hardware interface for a differential drive robot
 - **Arduino Communication**: rosserial-based communication with Arduino for motor control
 - **Encoder Feedback**: Real-time encoder reading for odometry
 - **Motor Control**: PWM-based motor control with smoothing and deadband
@@ -209,17 +208,17 @@ ros_control_final/
 
 | Component | Quantity | Purpose | Estimated Cost |
 |-----------|----------|---------|----------------|
-| **Jetson Nano** | 1 | Main processing unit for ROS 1 Melodic | $99 |
-| **Arduino UNO** | 1 | Motor control and sensor interface | $25 |
-| **L298N Motor Driver** | 1 | Drives two DC motors with current protection | $8 |
-| **16x2 LCD Display** | 1 | System status and debugging information | $10 |
+| **Jetson Nano** | 1 | Main processing unit for ROS 1 Melodic | $350 |
+| **Arduino UNO** | 1 | Motor control and sensor interface | $6 |
+| **L298N Motor Driver** | 1 | Drives two DC motors with current protection | $2 |
+| **16x2 LCD Display** | 1 | System status and debugging information | $3 |
 | **Encoder Motors (2x)** | 2 | DC motors with built-in encoders for odometry | $40 |
 | **RPLIDAR A1M8** | 1 | 360° laser scanner for navigation | $99 |
 | **Battery Pack (7.4V LiPo)** | 1 | Power supply for entire system | $30 |
-| **Robot Chassis Kit** | 1 | Mechanical platform and wheels | $25 |
-| **Jumper Wires & Connectors** | 1 set | Electrical connections | $15 |
+| **Robot Chassis Kit** | 1 | Mechanical platform and wheels | $100 |
+| **Jumper Wires & Connectors** | 1 set | Electrical connections | $3 |
 
-**Total Estimated Cost: ~$351**
+**Total Estimated Cost: ~$633**
 
 ### Tools Required
 
@@ -414,26 +413,6 @@ Connection: LIDAR ──► USB Port ──► Jetson Nano USB Port
 
 ## 8. Software Installation
 
-### Installing Ubuntu 18.04 on Jetson Nano
-
-1. **Download Jetson Nano Developer Kit SD Card Image**
-   ```bash
-   # Download from NVIDIA Developer website
-   wget https://developer.nvidia.com/jetson-nano-sd-card-image
-   ```
-
-2. **Flash SD Card** using Etcher or dd command
-   ```bash
-   # Using dd (replace /dev/sdX with your SD card)
-   sudo dd if=jetson-nano-image.img of=/dev/sdX bs=4M status=progress
-   ```
-
-3. **Initial Setup**
-   - Insert SD card and boot Jetson Nano
-   - Complete Ubuntu setup wizard
-   - Connect to WiFi/Ethernet
-   - Update system packages
-
 ### Installing ROS 1 Melodic
 
 ```bash
@@ -465,7 +444,7 @@ sudo apt install python-rosinstall python-rosinstall-generator python-wstool bui
 
 ```bash
 # Navigation stack
-sudo apt install ros-melodic-navigation
+sudo apt install ros-melodic-move-base
 
 # SLAM packages
 sudo apt install ros-melodic-slam-gmapping
@@ -481,15 +460,11 @@ sudo apt install ros-melodic-rosserial
 # Teleoperation
 sudo apt install ros-melodic-teleop-twist-keyboard
 
-# Transform library
-sudo apt install ros-melodic-tf2-tools
-
 # LIDAR drivers
 sudo apt install ros-melodic-rplidar-ros
 
-# Additional utilities
-sudo apt install ros-melodic-robot-state-publisher
-sudo apt install ros-melodic-joint-state-publisher
+# AMCL Package
+sudo apt install ros-melodic-amcl
 ```
 
 ### Creating ROS Workspace
